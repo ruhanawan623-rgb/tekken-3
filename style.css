@@ -1,0 +1,801 @@
+/* ==========================================================================
+   TEKKEN 3 - HIGH-OCTANE ARCADE FIGHTING STYLING & HUD
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@600;700&family=Teko:wght@700&display=swap');
+
+:root {
+    --tk-gold: #f5b041;
+    --tk-gold-bright: #f9e79f;
+    --tk-fire-red: #e74c3c;
+    --tk-dark-red: #78281f;
+    --tk-cyan: #00ffff;
+    --tk-blue-dark: #0b132b;
+    --tk-bg-dark: #0a0c10;
+    --tk-gray-panel: rgba(20, 24, 36, 0.88);
+    --font-heading: 'Teko', sans-serif;
+    --font-ui: 'Rajdhani', sans-serif;
+    --font-arcade: 'Orbitron', monospace;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+body, html {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background-color: var(--tk-bg-dark);
+    font-family: var(--font-ui);
+    color: #fff;
+}
+
+#game-wrapper {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* 3D WebGL Canvas Layer */
+#webgl-canvas-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+}
+
+/* Retro CRT Scanline Overlay */
+#crt-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 99;
+    pointer-events: none;
+    background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%);
+    background-size: 100% 4px;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+#crt-overlay.active {
+    opacity: 0.65;
+}
+
+/* Base Screen Containers */
+.game-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle at center, rgba(16, 20, 32, 0.75) 0%, rgba(5, 6, 10, 0.94) 100%);
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.game-screen.hidden {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   TITLE SCREEN
+   ========================================================================== */
+.title-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    animation: titleFloat 3s ease-in-out infinite alternate;
+}
+
+@keyframes titleFloat {
+    0% { transform: translateY(-5px); }
+    100% { transform: translateY(5px); }
+}
+
+.tekken-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.logo-main {
+    font-family: var(--font-heading);
+    font-size: clamp(4.5rem, 12vw, 8.5rem);
+    line-height: 0.85;
+    letter-spacing: 6px;
+    background: linear-gradient(180deg, #ffffff 0%, var(--tk-gold-bright) 35%, var(--tk-gold) 65%, var(--tk-dark-red) 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 25px rgba(245, 176, 65, 0.7)) drop-shadow(0 6px 0 #3b0e08);
+    transform: skew(-8deg);
+}
+
+.logo-sub {
+    font-family: var(--font-arcade);
+    font-size: clamp(1rem, 3vw, 1.8rem);
+    letter-spacing: 12px;
+    color: #ff3344;
+    text-shadow: 0 0 12px #ff0033;
+    margin-top: 5px;
+}
+
+.arcade-btn-start {
+    margin-top: 35px;
+    padding: 16px 45px;
+    font-family: var(--font-arcade);
+    font-size: 1.4rem;
+    font-weight: 900;
+    letter-spacing: 3px;
+    color: #ffffff;
+    background: linear-gradient(135deg, #e74c3c 0%, #922b21 100%);
+    border: 3px solid var(--tk-gold);
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 0 20px rgba(231, 76, 60, 0.6), inset 0 0 15px rgba(255, 255, 255, 0.3);
+    animation: pressStartBlink 1.2s infinite ease-in-out;
+    transform: skew(-6deg);
+    transition: all 0.2s ease;
+}
+
+.arcade-btn-start:hover {
+    transform: skew(-6deg) scale(1.08);
+    box-shadow: 0 0 35px rgba(245, 176, 65, 0.9);
+}
+
+@keyframes pressStartBlink {
+    0%, 100% { opacity: 1; filter: brightness(1); }
+    50% { opacity: 0.75; filter: brightness(1.3); }
+}
+
+.title-footer {
+    position: absolute;
+    bottom: 25px;
+    font-size: 0.85rem;
+    letter-spacing: 2px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+/* ==========================================================================
+   MODE SELECT SCREEN
+   ========================================================================== */
+.screen-title {
+    font-family: var(--font-heading);
+    font-size: clamp(2.8rem, 6vw, 4.2rem);
+    letter-spacing: 4px;
+    color: var(--tk-gold);
+    text-shadow: 0 0 15px rgba(245, 176, 65, 0.5);
+    margin-bottom: 35px;
+    transform: skew(-6deg);
+}
+
+.mode-cards-container {
+    display: flex;
+    gap: 25px;
+    flex-wrap: wrap;
+    justify-content: center;
+    max-width: 960px;
+    padding: 0 20px;
+}
+
+.mode-card {
+    flex: 1 1 260px;
+    max-width: 280px;
+    background: var(--tk-gray-panel);
+    border: 2px solid rgba(245, 176, 65, 0.3);
+    border-radius: 8px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transform: skew(-4deg);
+    transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+}
+
+.mode-card:hover {
+    transform: skew(-4deg) translateY(-10px) scale(1.04);
+    border-color: var(--tk-gold);
+    box-shadow: 0 0 25px rgba(245, 176, 65, 0.6);
+    background: rgba(35, 42, 60, 0.95);
+}
+
+.mode-icon {
+    font-size: 3rem;
+    margin-bottom: 12px;
+}
+
+.mode-title {
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    letter-spacing: 2px;
+    color: #fff;
+    margin-bottom: 8px;
+}
+
+.mode-desc {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.7);
+    line-height: 1.4;
+}
+
+/* ==========================================================================
+   CHARACTER SELECT SCREEN
+   ========================================================================== */
+.char-select-layout {
+    display: flex;
+    width: 90%;
+    max-width: 1100px;
+    gap: 30px;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+}
+
+.char-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 110px);
+    gap: 15px;
+}
+
+.char-card {
+    width: 110px;
+    height: 125px;
+    background: rgba(25, 30, 45, 0.9);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transform: skew(-4deg);
+    transition: all 0.2s ease;
+}
+
+.char-card:hover {
+    border-color: var(--tk-cyan);
+    transform: skew(-4deg) scale(1.05);
+}
+
+.char-card.p1-selected {
+    border-color: var(--tk-gold);
+    box-shadow: 0 0 18px var(--tk-gold);
+    background: rgba(70, 50, 20, 0.9);
+}
+
+.char-card-portrait {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    border: 2px solid #fff;
+}
+
+.char-card-letter {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    font-weight: bold;
+}
+
+.char-card-name {
+    font-family: var(--font-arcade);
+    font-size: 0.75rem;
+    letter-spacing: 1px;
+    text-align: center;
+}
+
+.char-preview-panel {
+    flex: 1;
+    min-width: 280px;
+    background: var(--tk-gray-panel);
+    border: 2px solid rgba(245, 176, 65, 0.4);
+    border-radius: 8px;
+    padding: 25px;
+    transform: skew(-3deg);
+}
+
+.char-preview-name {
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    color: var(--tk-gold);
+    letter-spacing: 2px;
+    line-height: 1;
+}
+
+.char-preview-style {
+    font-size: 1.1rem;
+    color: var(--tk-cyan);
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.char-preview-desc {
+    font-size: 0.95rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.5;
+    margin-bottom: 20px;
+}
+
+.stage-select-bar {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.stage-tag {
+    flex: 1;
+    padding: 8px;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    font-family: var(--font-arcade);
+    font-size: 0.75rem;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.stage-tag.active {
+    background: var(--tk-dark-red);
+    border-color: var(--tk-gold);
+    color: var(--tk-gold);
+}
+
+.btn-confirm-char {
+    width: 100%;
+    padding: 14px;
+    font-family: var(--font-arcade);
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #fff;
+    background: linear-gradient(135deg, #e74c3c, #922b21);
+    border: 2px solid var(--tk-gold);
+    border-radius: 6px;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(231, 76, 60, 0.5);
+    transition: transform 0.2s ease;
+}
+
+.btn-confirm-char:hover {
+    transform: scale(1.03);
+    box-shadow: 0 0 25px rgba(245, 176, 65, 0.8);
+}
+
+/* ==========================================================================
+   IN-GAME COMBAT HUD
+   ========================================================================== */
+#hud-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 5;
+    pointer-events: none;
+}
+
+#hud-layer.hidden {
+    display: none;
+}
+
+.hud-top-bar {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    padding: 20px 30px;
+    width: 100%;
+}
+
+.fighter-hud {
+    flex: 1;
+    max-width: 42%;
+    display: flex;
+    flex-direction: column;
+}
+
+.p1-hud {
+    align-items: flex-start;
+}
+
+.p2-hud {
+    align-items: flex-end;
+}
+
+.fighter-name-hud {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    letter-spacing: 2px;
+    color: #ffffff;
+    text-shadow: 0 0 8px rgba(0, 0, 0, 0.9), 0 2px 4px #000;
+    margin-bottom: 4px;
+}
+
+/* Lifebars with Tekken 3 3D Angular Cut */
+.health-bar-container {
+    position: relative;
+    width: 100%;
+    height: 24px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 2px solid #555;
+    border-radius: 4px;
+    overflow: hidden;
+    transform: skew(-15deg);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.8);
+}
+
+.p1-hud .health-bar-container {
+    border-color: #f5b041;
+}
+
+.p2-hud .health-bar-container {
+    border-color: #3498db;
+}
+
+.health-red-trail {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: #c0392b;
+    transition: width 0.4s ease-out;
+}
+
+.p1-hud .health-red-trail { left: 0; }
+.p2-hud .health-red-trail { right: 0; }
+
+.health-active-bar {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    background: linear-gradient(180deg, #ffe066 0%, #2ecc71 45%, #27ae60 100%);
+    transition: width 0.1s ease-out;
+}
+
+.p1-hud .health-active-bar { left: 0; }
+.p2-hud .health-active-bar { right: 0; }
+
+/* Rage Aura Bar when HP < 25% */
+.rage-aura-indicator {
+    display: none;
+    font-family: var(--font-arcade);
+    font-size: 0.75rem;
+    letter-spacing: 2px;
+    color: #ff3344;
+    text-shadow: 0 0 8px #ff0000;
+    margin-top: 4px;
+    animation: ragePulse 0.8s infinite alternate;
+}
+
+.rage-aura-indicator.active {
+    display: block;
+}
+
+@keyframes ragePulse {
+    0% { opacity: 0.7; transform: scale(0.98); }
+    100% { opacity: 1; transform: scale(1.05); }
+}
+
+.round-wins-container {
+    display: flex;
+    gap: 8px;
+    margin-top: 6px;
+}
+
+.round-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+}
+
+.round-dot.filled {
+    background: var(--tk-gold);
+    border-color: #fff;
+    box-shadow: 0 0 10px var(--tk-gold);
+}
+
+/* Central Round Timer */
+.timer-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: radial-gradient(circle, rgba(20, 24, 36, 0.9) 0%, rgba(5, 8, 12, 0.95) 100%);
+    border: 2px solid var(--tk-gold);
+    width: 72px;
+    height: 64px;
+    border-radius: 8px;
+    transform: skew(-10deg);
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.9);
+}
+
+.timer-number {
+    font-family: var(--font-arcade);
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+}
+
+/* Dynamic Combo Counters */
+.combo-counter-hud {
+    position: absolute;
+    top: 130px;
+    font-family: var(--font-heading);
+    font-size: 2.5rem;
+    letter-spacing: 2px;
+    color: var(--tk-gold);
+    text-shadow: 0 0 12px rgba(245, 176, 65, 0.8), 0 3px 0 #000;
+    opacity: 0;
+    transform: scale(0.8) skew(-10deg);
+    transition: all 0.15s ease-out;
+}
+
+.combo-counter-hud.visible {
+    opacity: 1;
+    transform: scale(1.15) skew(-10deg);
+}
+
+#p1-combo-hud { left: 40px; }
+#p2-combo-hud { right: 40px; }
+
+.combo-num {
+    font-size: 3.5rem;
+    color: #fff;
+}
+
+.combo-dmg {
+    font-size: 1.4rem;
+    color: #ff3344;
+}
+
+/* Announcer Big Banners (ROUND 1, FIGHT, K.O.) */
+.announcer-banner {
+    position: absolute;
+    top: 42%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.6);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    z-index: 20;
+}
+
+.announcer-banner.show {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1.2);
+}
+
+.announcer-big {
+    font-family: var(--font-heading);
+    font-size: clamp(4rem, 10vw, 7.5rem);
+    letter-spacing: 6px;
+    line-height: 0.85;
+    background: linear-gradient(180deg, #ffffff 0%, var(--tk-gold-bright) 40%, var(--tk-gold) 80%, #78281f 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 30px rgba(245, 176, 65, 0.9)) drop-shadow(0 8px 0 #000);
+    transform: skew(-10deg);
+}
+
+.announcer-sub {
+    font-family: var(--font-arcade);
+    font-size: 1.4rem;
+    letter-spacing: 8px;
+    color: var(--tk-cyan);
+    text-shadow: 0 0 12px var(--tk-cyan);
+    margin-top: 8px;
+}
+
+.fight-text {
+    background: linear-gradient(180deg, #fff 0%, #ff5252 50%, #b71c1c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 35px rgba(255, 0, 0, 0.9)) drop-shadow(0 8px 0 #000);
+}
+
+.ko-text {
+    background: linear-gradient(180deg, #fff 0%, #ff1744 50%, #880e4f 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    filter: drop-shadow(0 0 45px rgba(255, 23, 68, 1.0)) drop-shadow(0 8px 0 #000);
+    font-size: clamp(5.5rem, 14vw, 9.5rem);
+}
+
+/* ==========================================================================
+   TOP CORNER CONTROLS & HUD SHORTCUTS
+   ========================================================================== */
+.hud-corner-tools {
+    position: absolute;
+    bottom: 20px;
+    left: 25px;
+    display: flex;
+    gap: 12px;
+    pointer-events: auto;
+    z-index: 15;
+}
+
+.tool-btn {
+    padding: 8px 16px;
+    font-family: var(--font-arcade);
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #fff;
+    background: rgba(20, 24, 36, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.tool-btn:hover {
+    border-color: var(--tk-gold);
+    background: rgba(40, 50, 75, 0.95);
+}
+
+/* Move List Modal */
+#movelist-modal {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    width: 90%;
+    max-width: 650px;
+    background: rgba(15, 18, 28, 0.96);
+    border: 2px solid var(--tk-gold);
+    border-radius: 8px;
+    padding: 25px;
+    z-index: 50;
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.9);
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.25s ease;
+}
+
+#movelist-modal.visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.movelist-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.movelist-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+
+.movelist-table th, .movelist-table td {
+    padding: 10px 12px;
+    text-align: left;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+    font-size: 0.95rem;
+}
+
+.movelist-table th {
+    font-family: var(--font-arcade);
+    font-size: 0.8rem;
+    color: var(--tk-gold);
+}
+
+.cmd-badge {
+    padding: 3px 8px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    font-family: var(--font-arcade);
+    font-size: 0.8rem;
+}
+
+.type-badge {
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+.type-badge.high { color: #ffe066; }
+.type-badge.mid { color: #00ffff; }
+.type-badge.low { color: #ff5252; }
+.type-badge.throw { color: #e056fd; }
+
+/* ==========================================================================
+   ON-SCREEN MOBILE TOUCH CONTROLS
+   ========================================================================== */
+#touch-controls-layer {
+    position: absolute;
+    bottom: 20px;
+    left: 0;
+    width: 100%;
+    padding: 0 25px;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    pointer-events: none;
+    z-index: 12;
+}
+
+.touch-dpad-cluster, .touch-actions-cluster {
+    pointer-events: auto;
+    display: grid;
+    gap: 8px;
+}
+
+.touch-dpad-cluster {
+    grid-template-areas:
+        ". up ."
+        "left . right"
+        ". down .";
+}
+
+.touch-actions-cluster {
+    grid-template-columns: repeat(2, 60px);
+    grid-template-rows: repeat(3, 50px);
+}
+
+.touch-btn {
+    width: 58px;
+    height: 50px;
+    background: rgba(30, 38, 55, 0.75);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 8px;
+    color: #fff;
+    font-family: var(--font-arcade);
+    font-size: 0.85rem;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.touch-btn:active {
+    background: var(--tk-gold);
+    color: #000;
+}
+
+.touch-btn-up { grid-area: up; }
+.touch-btn-down { grid-area: down; }
+.touch-btn-left { grid-area: left; }
+.touch-btn-right { grid-area: right; }
+
+.touch-btn-lp { border-color: #ff3344; }
+.touch-btn-rp { border-color: #f1c40f; }
+.touch-btn-lk { border-color: #00ffff; }
+.touch-btn-rk { border-color: #2ecc71; }
+.touch-btn-special { grid-column: span 2; border-color: var(--tk-gold); }
+
+/* Only show touch controls on touch devices or small screens */
+@media (hover: hover) and (min-width: 900px) {
+    #touch-controls-layer {
+        display: none;
+    }
+}
