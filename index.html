@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="description" content="Tekken 3 3D Arcade Fighting Game - Authentic 4-button combat, 3D sidestepping, juggle combos, fighters roster, and WebGL graphics.">
+    <title>TEKKEN 3 - 3D Arcade Fighting Game</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Three.js 3D WebGL Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <div id="game-wrapper">
+        <!-- 3D WebGL Viewport -->
+        <div id="webgl-canvas-container"></div>
+
+        <!-- Retro CRT Scanlines Overlay -->
+        <div id="crt-overlay"></div>
+
+        <!-- =================================================================
+             SCREEN 1: TITLE SCREEN
+             ================================================================= -->
+        <div id="screen-title" class="game-screen">
+            <div class="title-container">
+                <div class="tekken-logo">
+                    <h1 class="logo-main">TEKKEN 3</h1>
+                    <div class="logo-sub">THE KING OF IRON FIST TOURNAMENT</div>
+                </div>
+
+                <button id="btn-press-start" class="arcade-btn-start">PRESS START</button>
+            </div>
+
+            <div class="title-footer">
+                <span>© NAMCO / ARCADE TRIBUTE • 60 FPS WEBGL 3D COMBAT ENGINE</span>
+            </div>
+        </div>
+
+        <!-- =================================================================
+             SCREEN 2: MODE SELECT
+             ================================================================= -->
+        <div id="screen-mode-select" class="game-screen hidden">
+            <h2 class="screen-title">SELECT BATTLE MODE</h2>
+            
+            <div class="mode-cards-container">
+                <div id="btn-mode-arcade" class="mode-card">
+                    <div class="mode-icon">🏆</div>
+                    <div class="mode-title">ARCADE MODE</div>
+                    <div class="mode-desc">Fight your way through the Iron Fist tournament ladder to face the Mishima Patriarch.</div>
+                </div>
+
+                <div id="btn-mode-vs" class="mode-card">
+                    <div class="mode-icon">⚔️</div>
+                    <div class="mode-title">VS BATTLE (2P)</div>
+                    <div class="mode-desc">Challenge a friend locally with 1P (WASD + U/I/J/K) and 2P (Arrows + Numpad) controls.</div>
+                </div>
+
+                <div id="btn-mode-practice" class="mode-card">
+                    <div class="mode-icon">🥋</div>
+                    <div class="mode-title">PRACTICE DOJO</div>
+                    <div class="mode-desc">Hone your launchers, juggle combos, frame traps, and 3D sidestep evasion in free training.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================
+             SCREEN 3: CHARACTER & STAGE SELECT
+             ================================================================= -->
+        <div id="screen-char-select" class="game-screen hidden">
+            <h2 class="screen-title">CHOOSE YOUR FIGHTER</h2>
+
+            <div class="char-select-layout">
+                <!-- Fighter Roster Grid -->
+                <div id="char-grid" class="char-grid"></div>
+
+                <!-- Fighter Info & Stage Select Panel -->
+                <div class="char-preview-panel">
+                    <div id="p1-preview-name" class="char-preview-name">JIN KAZAMA</div>
+                    <div id="p1-preview-style" class="char-preview-style">JAPAN • Traditional Karate</div>
+                    <div id="p1-preview-desc" class="char-preview-desc">Master of Karate and Mishima Arts. Lightning-fast strikes & launchers.</div>
+
+                    <div style="font-size: 0.8rem; font-family: var(--font-arcade); color: var(--tk-gold); margin-bottom: 8px;">SELECT ARENA:</div>
+                    <div id="stage-select-bar" class="stage-select-bar"></div>
+
+                    <button id="btn-confirm-char" class="btn-confirm-char">START BATTLE ➔</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- =================================================================
+             SCREEN 4: IN-GAME COMBAT HUD
+             ================================================================= -->
+        <div id="hud-layer" class="hidden">
+            <!-- Top Healthbars & Timer -->
+            <div class="hud-top-bar">
+                <!-- Player 1 HUD -->
+                <div class="fighter-hud p1-hud">
+                    <div id="p1-name-hud" class="fighter-name-hud">JIN KAZAMA</div>
+                    <div class="health-bar-container">
+                        <div id="p1-health-red" class="health-red-trail" style="width: 100%;"></div>
+                        <div id="p1-health-bar" class="health-active-bar" style="width: 100%;"></div>
+                    </div>
+                    <div id="p1-rage-aura" class="rage-aura-indicator">🔥 RAGE MODE ACTIVE</div>
+                    <div id="p1-round-wins" class="round-wins-container"></div>
+                </div>
+
+                <!-- Central Round Countdown Timer -->
+                <div class="timer-container">
+                    <div id="match-timer" class="timer-number">60</div>
+                </div>
+
+                <!-- Player 2 HUD -->
+                <div class="fighter-hud p2-hud">
+                    <div id="p2-name-hud" class="fighter-name-hud">PAUL PHOENIX</div>
+                    <div class="health-bar-container">
+                        <div id="p2-health-red" class="health-red-trail" style="width: 100%;"></div>
+                        <div id="p2-health-bar" class="health-active-bar" style="width: 100%;"></div>
+                    </div>
+                    <div id="p2-rage-aura" class="rage-aura-indicator">🔥 RAGE MODE ACTIVE</div>
+                    <div id="p2-round-wins" class="round-wins-container"></div>
+                </div>
+            </div>
+
+            <!-- Dynamic Combo Counters -->
+            <div id="p1-combo-hud" class="combo-counter-hud"></div>
+            <div id="p2-combo-hud" class="combo-counter-hud"></div>
+
+            <!-- Announcer Banners (Round 1, FIGHT, K.O.) -->
+            <div id="announcer-banner" class="announcer-banner">
+                <div class="announcer-big">ROUND 1</div>
+                <div class="announcer-sub">GET READY...</div>
+            </div>
+
+            <!-- In-Game Quick Shortcuts -->
+            <div class="hud-corner-tools">
+                <button id="btn-toggle-movelist" class="tool-btn">📜 MOVE LIST</button>
+                <button id="audio-mute-btn" class="tool-btn">🔊 SOUND</button>
+                <label style="display: flex; align-items: center; gap: 6px; font-size: 0.8rem; font-family: var(--font-arcade); cursor: pointer;">
+                    <input type="checkbox" id="crt-toggle"> CRT SCANLINES
+                </label>
+            </div>
+        </div>
+
+        <!-- =================================================================
+             SCREEN 5: MATCH OVER / TOURNAMENT VICTORY
+             ================================================================= -->
+        <div id="screen-match-over" class="game-screen hidden">
+            <h2 id="match-over-title" class="screen-title">JIN KAZAMA WINS!</h2>
+            <div id="match-over-desc" style="font-size: 1.3rem; margin-bottom: 30px; letter-spacing: 2px; color: var(--tk-cyan);">FINAL SCORE: 2 - 0</div>
+
+            <div style="display: flex; gap: 20px;">
+                <button id="btn-rematch" class="btn-confirm-char" style="width: 180px;">REMATCH</button>
+                <button id="btn-main-menu" class="btn-confirm-char" style="width: 180px; background: #2c3e50;">MAIN MENU</button>
+            </div>
+        </div>
+
+        <!-- =================================================================
+             MOVE LIST COMMAND MODAL
+             ================================================================= -->
+        <div id="movelist-modal">
+            <div class="movelist-header">
+                <h3 style="font-family: var(--font-arcade); color: var(--tk-gold);">COMMAND LIST</h3>
+                <button id="btn-close-movelist" class="tool-btn">✖ CLOSE</button>
+            </div>
+            <div id="movelist-content"></div>
+            <div style="margin-top: 15px; font-size: 0.85rem; color: #aaa;">
+                <strong>1P KEYBOARD:</strong> WASD = Move/Jump/Crouch | Q/E = 3D Sidestep | U = LP (1) | I = RP (2) | J = LK (3) | K = RK (4) | L = Launcher | O = Throw | Space = Rage Art<br>
+                <strong>GAMEPAD:</strong> D-Pad/Stick = Move | X = LP | Y = RP | A = LK | B = RK | LB/LT = Sidestep | RB = Throw | RT = Rage Art
+            </div>
+        </div>
+
+        <!-- =================================================================
+             ON-SCREEN MOBILE TOUCH ARCADE PAD
+             ================================================================= -->
+        <div id="touch-controls-layer">
+            <!-- D-Pad Directionals -->
+            <div class="touch-dpad-cluster">
+                <button class="touch-btn touch-btn-up" data-action="jump">▲</button>
+                <button class="touch-btn touch-btn-left" data-action="back">◀</button>
+                <button class="touch-btn touch-btn-right" data-action="forward">▶</button>
+                <button class="touch-btn touch-btn-down" data-action="crouch">▼</button>
+            </div>
+
+            <!-- 4-Button Action Cluster -->
+            <div class="touch-actions-cluster">
+                <button class="touch-btn touch-btn-lp" data-action="lp">1 (LP)</button>
+                <button class="touch-btn touch-btn-rp" data-action="rp">2 (RP)</button>
+                <button class="touch-btn touch-btn-lk" data-action="lk">3 (LK)</button>
+                <button class="touch-btn touch-btn-rk" data-action="rk">4 (RK)</button>
+                <button class="touch-btn touch-btn-special" data-action="special">SPECIAL / LAUNCHER</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script Execution Sequence -->
+    <script src="js/audio.js"></script>
+    <script src="js/animations.js"></script>
+    <script src="js/character-model.js"></script>
+    <script src="js/engine.js"></script>
+    <script src="js/fighter.js"></script>
+    <script src="js/combat.js"></script>
+    <script src="js/ai.js"></script>
+    <script src="js/input.js"></script>
+    <script src="js/game.js"></script>
+</body>
+</html>
